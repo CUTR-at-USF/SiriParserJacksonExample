@@ -48,9 +48,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 //Jackson JSON imports
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-//PascalCase import, to help Jackson deserialize PascalCase instead of the normal camelCase
-import edu.usf.cutr.siri.jackson.PascalCaseStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 
 /**
  * This class is an example of parsing a JSON or XML response from a SIRI feed using Jackson
@@ -104,7 +102,7 @@ public class SiriParserJacksonExample {
 	            mapper.configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 	           
 	            //Tell Jackson to expect the JSON in PascalCase, instead of camelCase
-				mapper.setPropertyNamingStrategy(new PascalCaseStrategy());
+				mapper.setPropertyNamingStrategy(new PropertyNamingStrategy.PascalCaseStrategy());
 	                       
 				//Deserialize the JSON from the file into the Siri object
 				siri = mapper.readValue(file, Siri.class);
@@ -154,7 +152,7 @@ public class SiriParserJacksonExample {
 						true);
 				
 				//Tell Jackson to expect the XML in PascalCase, instead of camelCase
-				xmlMapper.setPropertyNamingStrategy(new PascalCaseStrategy());
+				xmlMapper.setPropertyNamingStrategy(new PropertyNamingStrategy.PascalCaseStrategy());
 				
 				//Parse the SIRI XML response				
 				siri = xmlMapper.readValue(file,  Siri.class);				
