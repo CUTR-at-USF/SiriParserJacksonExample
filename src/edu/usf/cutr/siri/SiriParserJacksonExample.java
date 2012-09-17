@@ -41,6 +41,7 @@ import uk.org.siri.siri.VehicleMonitoringDelivery;
 //Jackson XML imports
 import com.fasterxml.aalto.stax.InputFactoryImpl;
 import com.fasterxml.aalto.stax.OutputFactoryImpl;
+import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlFactory;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 
@@ -121,7 +122,26 @@ public class SiriParserJacksonExample {
 				//Use Aalto StAX implementation explicitly				
 				XmlFactory f = new XmlFactory(new InputFactoryImpl(), new OutputFactoryImpl());
 				
-				XmlMapper xmlMapper = new XmlMapper(f);
+				JacksonXmlModule module = new JacksonXmlModule();
+
+				/*
+				 * Tell Jackson that Lists are using "unwrapped" style (i.e., 
+				 * there is no wrapper element for list). This fixes the error
+				 * "com.fasterxml.jackson.databind.JsonMappingException: Can not
+				 * >> instantiate value of type [simple type, class >>
+				 * uk.org.siri.siri.VehicleMonitoringDelivery] from JSON String;
+				 * no >> single-String constructor/factory method (through
+				 * reference chain: >>
+				 * uk.org.siri.siri.Siri["ServiceDelivery"]->
+				 * uk.org.siri.siri.ServiceDel >>
+				 * ivery["VehicleMonitoringDelivery"])"
+				 * 
+				 * NOTE - This requires Jackson 2.1, which is still pre-release
+				 * as of 9/12/2012
+				 */
+				module.setDefaultUseWrapper(false);
+
+				XmlMapper xmlMapper = new XmlMapper(f, module);
 				
 				xmlMapper.configure(
 						DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
@@ -191,72 +211,80 @@ public class SiriParserJacksonExample {
 			for(VehicleMonitoringDelivery vmd : listVMD){
             	            	
             	List<VehicleActivity> vaList = vmd.getVehicleActivity();
-            		            	            	
-            	for(VehicleActivity va : vaList){
-            		System.out.println("------------------------");
-	            	System.out.println("-   Vehicle Activity:  -");
-	            	System.out.println("------------------------");
-	            	
-            		System.out.println("LineRef: " + va.getMonitoredVehicleJourney().getLineRef());
-            		System.out.println("DirectionRef: " + va.getMonitoredVehicleJourney().getDirectionRef());
-            		System.out.println("FramedVehicleJourneyRef.DataFrameRef: " + va.getMonitoredVehicleJourney().getFramedVehicleJourneyRef().getDataFrameRef());
-            		System.out.println("FramedVehicleJourneyRef.DatedVehicleJourneyRef: " + va.getMonitoredVehicleJourney().getFramedVehicleJourneyRef().getDatedVehicleJourneyRef());            		
-            		System.out.println("JourneyPatternRef: " + va.getMonitoredVehicleJourney().getJourneyPatternRef());
-            		System.out.println("PublishedLineName: " + va.getMonitoredVehicleJourney().getPublishedLineName());
-            		System.out.println("OperatorRef: " + va.getMonitoredVehicleJourney().getOperatorRef());
-            		System.out.println("OriginRef: " + va.getMonitoredVehicleJourney().getOriginRef());
-            		System.out.println("DestinationRef: " + va.getMonitoredVehicleJourney().getDestinationRef());
-            		System.out.println("DestinationName: " + va.getMonitoredVehicleJourney().getDestinationName());
-            		
-            		System.out.println("------------------");
-                	System.out.println("- Situation Ref: -");
-                	System.out.println("------------------");
-                	List<SituationRef> srList = va.getMonitoredVehicleJourney().getSituationRef();                	
-                	for(SituationRef sr : srList){
-                		System.out.println("SituationRef: " + sr.getSituationSimpleRef());
-                		System.out.println("SituationRef.FullRef: " + sr.getSituationFullRef());
-                		
-                	}
-                	System.out.println("----------------");
-                	
-                	System.out.println("Monitored: " + va.getMonitoredVehicleJourney().isMonitored());
-                	System.out.println("VehicleLocation.Longitude: " + va.getMonitoredVehicleJourney().getVehicleLocation().getLongitude());
-                	System.out.println("VehicleLocation.Latitude: " + va.getMonitoredVehicleJourney().getVehicleLocation().getLatitude());
-                	System.out.println("Bearing: " + va.getMonitoredVehicleJourney().getBearing());
-                	System.out.println("ProgressRate: " + va.getMonitoredVehicleJourney().getProgressRate());
-                	System.out.println("ProgressStatus: " + va.getMonitoredVehicleJourney().getProgressStatus());
-                	System.out.println("BlockRef: " + va.getMonitoredVehicleJourney().getBlockRef());
-                	System.out.println("VehicleRef: " + va.getMonitoredVehicleJourney().getVehicleRef());
-                	System.out.println("MonitoredCall.Extensions.Distances.PresentableDistance: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getPresentableDistance());
-                	System.out.println("MonitoredCall.Extensions.Distances.DistanceFromCall: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getDistanceFromCall());
-                	System.out.println("MonitoredCall.Extensions.Distances.StopsFromCall: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getStopsFromCall());
-                	System.out.println("MonitoredCall.Extensions.Distances.CallDistanceAlongRoute: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getCallDistanceAlongRoute());
-                	System.out.println("MonitoredCall.StopPointRef: " + va.getMonitoredVehicleJourney().getMonitoredCall().getStopPointRef());
-                	System.out.println("MonitoredCall.VisitNumber: " + va.getMonitoredVehicleJourney().getMonitoredCall().getVisitNumber());
-                	System.out.println("MonitoredCall.StopPointName: " + va.getMonitoredVehicleJourney().getMonitoredCall().getStopPointName());
-                	
-                	System.out.println("OnwardCalls.AimedArrivalTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedArrivalTime());
-                	System.out.println("OnwardCalls.AimedDepartureTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedDepartureTime());
-                	System.out.println("OnwardCalls.AimedHeadwayInterval: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedHeadwayInterval());
-                	System.out.println("OnwardCalls.ArrivalBoardingActivity: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalBoardingActivity());
-                	System.out.println("OnwardCalls.ArrivalPlatformName: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalPlatformName());
-                	System.out.println("OnwardCalls.ArrivalStatus: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalStatus());
-                	System.out.println("OnwardCalls.DepartureBoardingActivity: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDepartureBoardingActivity());
-                	System.out.println("OnwardCalls.DeparturePlatformName: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDeparturePlatformName());
-                	System.out.println("OnwardCalls.DepartureStatus: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDepartureStatus());
-                	System.out.println("OnwardCalls.ExpectedArrivalTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedArrivalTime());
-                	System.out.println("OnwardCalls.ExpectedDepartureTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedDepartureTime());
-                	System.out.println("OnwardCalls.ExpectedHeadwayInterval: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedHeadwayInterval());                	               	
-                	
-                	if(va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions() != null){
-                		System.out.println("OnwardCalls.Extensions.Distances.PresentableDistance: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getPresentableDistance());
-                		System.out.println("OnwardCalls.Extensions.Distances.DistanceFromCall: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getDistanceFromCall());
-                		System.out.println("OnwardCalls.Extensions.Distances.StopsFromCall: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getStopsFromCall());
-                		System.out.println("OnwardCalls.Extensions.Distances.CallDistanceAlongRoute: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getCallDistanceAlongRoute());
-                	}
-                	
-                	System.out.println("RecordedAtTime: " + va.getRecordedAtTime());
-                	System.out.println("------------------------");
+
+            	if(vaList != null){
+	            	for(VehicleActivity va : vaList){
+	            		System.out.println("------------------------");
+		            	System.out.println("-   Vehicle Activity:  -");
+		            	System.out.println("------------------------");
+		            	
+	            		System.out.println("LineRef: " + va.getMonitoredVehicleJourney().getLineRef());
+	            		System.out.println("DirectionRef: " + va.getMonitoredVehicleJourney().getDirectionRef());
+	            		System.out.println("FramedVehicleJourneyRef.DataFrameRef: " + va.getMonitoredVehicleJourney().getFramedVehicleJourneyRef().getDataFrameRef());
+	            		System.out.println("FramedVehicleJourneyRef.DatedVehicleJourneyRef: " + va.getMonitoredVehicleJourney().getFramedVehicleJourneyRef().getDatedVehicleJourneyRef());            		
+	            		System.out.println("JourneyPatternRef: " + va.getMonitoredVehicleJourney().getJourneyPatternRef());
+	            		System.out.println("PublishedLineName: " + va.getMonitoredVehicleJourney().getPublishedLineName());
+	            		System.out.println("OperatorRef: " + va.getMonitoredVehicleJourney().getOperatorRef());
+	            		System.out.println("OriginRef: " + va.getMonitoredVehicleJourney().getOriginRef());
+	            		System.out.println("DestinationRef: " + va.getMonitoredVehicleJourney().getDestinationRef());
+	            		System.out.println("DestinationName: " + va.getMonitoredVehicleJourney().getDestinationName());
+	            		
+	            		System.out.println("------------------");
+	                	System.out.println("- Situation Ref: -");
+	                	System.out.println("------------------");
+	                	List<SituationRef> srList = va.getMonitoredVehicleJourney().getSituationRef();  
+	                	if(srList != null){
+		                	for(SituationRef sr : srList){
+		                		System.out.println("SituationRef: " + sr.getSituationSimpleRef());
+		                		System.out.println("SituationRef.FullRef: " + sr.getSituationFullRef());
+		                		
+		                	}
+		                	System.out.println("----------------");
+	                	}
+	                	
+	                	System.out.println("Monitored: " + va.getMonitoredVehicleJourney().isMonitored());
+	                	System.out.println("VehicleLocation.Longitude: " + va.getMonitoredVehicleJourney().getVehicleLocation().getLongitude());
+	                	System.out.println("VehicleLocation.Latitude: " + va.getMonitoredVehicleJourney().getVehicleLocation().getLatitude());
+	                	System.out.println("Bearing: " + va.getMonitoredVehicleJourney().getBearing());
+	                	System.out.println("ProgressRate: " + va.getMonitoredVehicleJourney().getProgressRate());
+	                	System.out.println("ProgressStatus: " + va.getMonitoredVehicleJourney().getProgressStatus());
+	                	System.out.println("BlockRef: " + va.getMonitoredVehicleJourney().getBlockRef());
+	                	System.out.println("VehicleRef: " + va.getMonitoredVehicleJourney().getVehicleRef());
+	                	if(va.getMonitoredVehicleJourney().getMonitoredCall() != null){
+		                	System.out.println("MonitoredCall.Extensions.Distances.PresentableDistance: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getPresentableDistance());
+		                	System.out.println("MonitoredCall.Extensions.Distances.DistanceFromCall: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getDistanceFromCall());
+		                	System.out.println("MonitoredCall.Extensions.Distances.StopsFromCall: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getStopsFromCall());
+		                	System.out.println("MonitoredCall.Extensions.Distances.CallDistanceAlongRoute: " + va.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getCallDistanceAlongRoute());
+		                	System.out.println("MonitoredCall.StopPointRef: " + va.getMonitoredVehicleJourney().getMonitoredCall().getStopPointRef());
+		                	System.out.println("MonitoredCall.VisitNumber: " + va.getMonitoredVehicleJourney().getMonitoredCall().getVisitNumber());
+		                	System.out.println("MonitoredCall.StopPointName: " + va.getMonitoredVehicleJourney().getMonitoredCall().getStopPointName());
+	                	}
+	                	if(va.getMonitoredVehicleJourney().getOnwardCalls() != null){
+		                	System.out.println("OnwardCalls.AimedArrivalTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedArrivalTime());
+		                	System.out.println("OnwardCalls.AimedDepartureTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedDepartureTime());
+		                	System.out.println("OnwardCalls.AimedHeadwayInterval: " + va.getMonitoredVehicleJourney().getOnwardCalls().getAimedHeadwayInterval());
+		                	System.out.println("OnwardCalls.ArrivalBoardingActivity: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalBoardingActivity());
+		                	System.out.println("OnwardCalls.ArrivalPlatformName: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalPlatformName());
+		                	System.out.println("OnwardCalls.ArrivalStatus: " + va.getMonitoredVehicleJourney().getOnwardCalls().getArrivalStatus());
+		                	System.out.println("OnwardCalls.DepartureBoardingActivity: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDepartureBoardingActivity());
+		                	System.out.println("OnwardCalls.DeparturePlatformName: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDeparturePlatformName());
+		                	System.out.println("OnwardCalls.DepartureStatus: " + va.getMonitoredVehicleJourney().getOnwardCalls().getDepartureStatus());
+		                	System.out.println("OnwardCalls.ExpectedArrivalTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedArrivalTime());
+		                	System.out.println("OnwardCalls.ExpectedDepartureTime: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedDepartureTime());
+		                	System.out.println("OnwardCalls.ExpectedHeadwayInterval: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExpectedHeadwayInterval());
+		                	
+		                	
+		                	if(va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions() != null){
+		                		System.out.println("OnwardCalls.Extensions.Distances.PresentableDistance: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getPresentableDistance());
+		                		System.out.println("OnwardCalls.Extensions.Distances.DistanceFromCall: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getDistanceFromCall());
+		                		System.out.println("OnwardCalls.Extensions.Distances.StopsFromCall: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getStopsFromCall());
+		                		System.out.println("OnwardCalls.Extensions.Distances.CallDistanceAlongRoute: " + va.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getCallDistanceAlongRoute());
+		                	}
+	                	}
+	                	
+	                	System.out.println("RecordedAtTime: " + va.getRecordedAtTime());
+	                	System.out.println("------------------------");
+	            	}
             	}
             		            	
             	System.out.println("ResponseTimestamp: " + vmd.getResponseTimestamp());
@@ -314,32 +342,35 @@ public class SiriParserJacksonExample {
                 	System.out.println("ProgressStatus: " + msv.getMonitoredVehicleJourney().getProgressStatus());
                 	System.out.println("BlockRef: " + msv.getMonitoredVehicleJourney().getBlockRef());
                 	System.out.println("VehicleRef: " + msv.getMonitoredVehicleJourney().getVehicleRef());
-                	System.out.println("MonitoredCall.Extensions.Distances.PresentableDistance: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getPresentableDistance());
-                	System.out.println("MonitoredCall.Extensions.Distances.DistanceFromCall: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getDistanceFromCall());
-                	System.out.println("MonitoredCall.Extensions.Distances.StopsFromCall: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getStopsFromCall());
-                	System.out.println("MonitoredCall.Extensions.Distances.CallDistanceAlongRoute: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getCallDistanceAlongRoute());
-                	System.out.println("MonitoredCall.StopPointRef: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getStopPointRef());
-                	System.out.println("MonitoredCall.VisitNumber: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getVisitNumber());
-                	System.out.println("MonitoredCall.StopPointName: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getStopPointName());
-                	
-                	System.out.println("OnwardCalls.AimedArrivalTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedArrivalTime());
-                	System.out.println("OnwardCalls.AimedDepartureTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedDepartureTime());
-                	System.out.println("OnwardCalls.AimedHeadwayInterval: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedHeadwayInterval());
-                	System.out.println("OnwardCalls.ArrivalBoardingActivity: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalBoardingActivity());
-                	System.out.println("OnwardCalls.ArrivalPlatformName: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalPlatformName());
-                	System.out.println("OnwardCalls.ArrivalStatus: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalStatus());
-                	System.out.println("OnwardCalls.DepartureBoardingActivity: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDepartureBoardingActivity());
-                	System.out.println("OnwardCalls.DeparturePlatformName: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDeparturePlatformName());
-                	System.out.println("OnwardCalls.DepartureStatus: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDepartureStatus());
-                	System.out.println("OnwardCalls.ExpectedArrivalTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedArrivalTime());
-                	System.out.println("OnwardCalls.ExpectedDepartureTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedDepartureTime());
-                	System.out.println("OnwardCalls.ExpectedHeadwayInterval: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedHeadwayInterval());                	               	
-                	
-                	if(msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions() != null){
-                		System.out.println("OnwardCalls.Extensions.Distances.PresentableDistance: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getPresentableDistance());
-                		System.out.println("OnwardCalls.Extensions.Distances.DistanceFromCall: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getDistanceFromCall());
-                		System.out.println("OnwardCalls.Extensions.Distances.StopsFromCall: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getStopsFromCall());
-                		System.out.println("OnwardCalls.Extensions.Distances.CallDistanceAlongRoute: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getCallDistanceAlongRoute());
+                	if(msv.getMonitoredVehicleJourney().getMonitoredCall() != null){
+	                	System.out.println("MonitoredCall.Extensions.Distances.PresentableDistance: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getPresentableDistance());
+	                	System.out.println("MonitoredCall.Extensions.Distances.DistanceFromCall: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getDistanceFromCall());
+	                	System.out.println("MonitoredCall.Extensions.Distances.StopsFromCall: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getStopsFromCall());
+	                	System.out.println("MonitoredCall.Extensions.Distances.CallDistanceAlongRoute: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getExtensions().getDistances().getCallDistanceAlongRoute());
+	                	System.out.println("MonitoredCall.StopPointRef: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getStopPointRef());
+	                	System.out.println("MonitoredCall.VisitNumber: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getVisitNumber());
+	                	System.out.println("MonitoredCall.StopPointName: " + msv.getMonitoredVehicleJourney().getMonitoredCall().getStopPointName());
+                	}
+                	if(msv.getMonitoredVehicleJourney().getOnwardCalls() != null){
+	                	System.out.println("OnwardCalls.AimedArrivalTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedArrivalTime());
+	                	System.out.println("OnwardCalls.AimedDepartureTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedDepartureTime());
+	                	System.out.println("OnwardCalls.AimedHeadwayInterval: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getAimedHeadwayInterval());
+	                	System.out.println("OnwardCalls.ArrivalBoardingActivity: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalBoardingActivity());
+	                	System.out.println("OnwardCalls.ArrivalPlatformName: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalPlatformName());
+	                	System.out.println("OnwardCalls.ArrivalStatus: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getArrivalStatus());
+	                	System.out.println("OnwardCalls.DepartureBoardingActivity: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDepartureBoardingActivity());
+	                	System.out.println("OnwardCalls.DeparturePlatformName: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDeparturePlatformName());
+	                	System.out.println("OnwardCalls.DepartureStatus: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getDepartureStatus());
+	                	System.out.println("OnwardCalls.ExpectedArrivalTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedArrivalTime());
+	                	System.out.println("OnwardCalls.ExpectedDepartureTime: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedDepartureTime());
+	                	System.out.println("OnwardCalls.ExpectedHeadwayInterval: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExpectedHeadwayInterval());                	               	
+	                	
+	                	if(msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions() != null){
+	                		System.out.println("OnwardCalls.Extensions.Distances.PresentableDistance: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getPresentableDistance());
+	                		System.out.println("OnwardCalls.Extensions.Distances.DistanceFromCall: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getDistanceFromCall());
+	                		System.out.println("OnwardCalls.Extensions.Distances.StopsFromCall: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getStopsFromCall());
+	                		System.out.println("OnwardCalls.Extensions.Distances.CallDistanceAlongRoute: " + msv.getMonitoredVehicleJourney().getOnwardCalls().getExtensions().getDistances().getCallDistanceAlongRoute());
+	                	}
                 	}
                 	
                 	System.out.println("RecordedAtTime: " + msv.getRecordedAtTime());
@@ -361,48 +392,50 @@ public class SiriParserJacksonExample {
     	
     	List<SituationExchangeDelivery> sedList = siri.getServiceDelivery().getSituationExchangeDelivery();
     	
-    	for(SituationExchangeDelivery sed : sedList){
-    		List<PtSituationElement> ptseList = sed.getSituations().getPtSituationElement();
-    		
-    		System.out.println("----------------------------");
-        	System.out.println("-     PtSituationElement:  -");
-        	System.out.println("----------------------------");
-    		
-    		for(PtSituationElement ptse : ptseList){
-    			System.out.println("PtSituationElement.PublicationWindow.StartTime: " + ptse.getPublicationWindow().getStartTime());
-    			System.out.println("PtSituationElement.PublicationWindow.EndTime: " + ptse.getPublicationWindow().getEndTime());
-    			System.out.println("PtSituationElement.Severity: " + ptse.getSeverity());
-    			System.out.println("PtSituationElement.Summary: " + ptse.getSummary()); //TODO - check this output
-    			System.out.println("PtSituationElement.Description: " + ptse.getDescription()); //TODO - check this output
-    			       			
-    			List<AffectedVehicleJourney> avjList = ptse.getAffects().getVehicleJourneys().getAffectedVehicleJourney();
-    			
-    			for(AffectedVehicleJourney avj : avjList){
-    				
-    				System.out.println("---------------------------");
-                	System.out.println("- AffectedVehicleJounrey: -");
-                	System.out.println("---------------------------");
-                	System.out.println("LineRef: " + avj.getLineRef()); //TODO - check this output
-                	System.out.println("DirectionRef: " + avj.getDirectionRef()); //TODO - check this output        				
-    			}
-    			
-    			System.out.println("---------------------------");
-    			
-    			List<PtConsequence> ptConList = ptse.getConsequences().getConsequence();  //TODO - check this output
-    			
-    			for(PtConsequence ptCon: ptConList){
-    				System.out.println("----------------------");
-                	System.out.println("-    PtConsequences: -");
-                	System.out.println("----------------------");
-                	System.out.println("Condition: " + ptCon.getCondition().toString());
-    			}
-    			
-    			System.out.println("----------------------");
-    			
-    			System.out.println("PtSituationElement.SituationNumber: " + ptse.getSituationNumber()); //TODO - check this output        			
-    		}
-    		System.out.println("----------------------------");
-    		
+    	if(sedList != null){
+	    	for(SituationExchangeDelivery sed : sedList){
+	    		List<PtSituationElement> ptseList = sed.getSituations().getPtSituationElement();
+	    		
+	    		System.out.println("----------------------------");
+	        	System.out.println("-     PtSituationElement:  -");
+	        	System.out.println("----------------------------");
+	    		
+	    		for(PtSituationElement ptse : ptseList){
+	    			System.out.println("PtSituationElement.PublicationWindow.StartTime: " + ptse.getPublicationWindow().getStartTime());
+	    			System.out.println("PtSituationElement.PublicationWindow.EndTime: " + ptse.getPublicationWindow().getEndTime());
+	    			System.out.println("PtSituationElement.Severity: " + ptse.getSeverity());
+	    			System.out.println("PtSituationElement.Summary: " + ptse.getSummary()); //TODO - check this output
+	    			System.out.println("PtSituationElement.Description: " + ptse.getDescription()); //TODO - check this output
+	    			       			
+	    			List<AffectedVehicleJourney> avjList = ptse.getAffects().getVehicleJourneys().getAffectedVehicleJourney();
+	    			
+	    			for(AffectedVehicleJourney avj : avjList){
+	    				
+	    				System.out.println("---------------------------");
+	                	System.out.println("- AffectedVehicleJounrey: -");
+	                	System.out.println("---------------------------");
+	                	System.out.println("LineRef: " + avj.getLineRef()); //TODO - check this output
+	                	System.out.println("DirectionRef: " + avj.getDirectionRef()); //TODO - check this output        				
+	    			}
+	    			
+	    			System.out.println("---------------------------");
+	    			
+	    			List<PtConsequence> ptConList = ptse.getConsequences().getConsequence();  //TODO - check this output
+	    			
+	    			for(PtConsequence ptCon: ptConList){
+	    				System.out.println("----------------------");
+	                	System.out.println("-    PtConsequences: -");
+	                	System.out.println("----------------------");
+	                	System.out.println("Condition: " + ptCon.getCondition().toString());
+	    			}
+	    			
+	    			System.out.println("----------------------");
+	    			
+	    			System.out.println("PtSituationElement.SituationNumber: " + ptse.getSituationNumber()); //TODO - check this output        			
+	    		}
+	    		System.out.println("----------------------------");
+	    		
+	    	}
     	}
     	System.out.println("------------------------------------------");
 	}
