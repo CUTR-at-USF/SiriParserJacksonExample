@@ -61,8 +61,8 @@
         <dependency>
             <artifactId>onebusaway-siri-api-v13-pojos</artifactId>            
             <groupId>edu.usf.cutr.siri</groupId>
-        <version>1.0.0</version>
-    </dependency>
+            <version>1.0.0</version>
+        </dependency>
   </dependencies>
   
   
@@ -76,7 +76,7 @@
       <repository>
         <id>cutr-releases</id>
         <url>https://github.com/CUTR-at-USF/cutr-mvn-repo/raw/master/releases</url>
-    </repository> 
+      </repository> 
  </repositories>
 
 </project>
